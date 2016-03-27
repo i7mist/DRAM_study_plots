@@ -2,32 +2,29 @@
 library(argparse)
 
 parser <- ArgumentParser(description="Process some integers")
-parser$add_argument("--allcsv", required=TRUE, help="input csv file that contains performance statistics for all DRAM")
-parser$add_argument("--refMPKI", required=TRUE, help="input csv file that contains MPKI statistics for this workload (use DDR3-2133L as a reference)")
 parser$add_argument("--ytitle", required=TRUE, help="input y axis title")
 parser$add_argument("--graphtitle", required=TRUE, help="input the title of the graph")
-parser$add_argument("--output", required=TRUE, help="plot output filename")
+parser$add_argument("--dir", required=TRUE, help="dir of input csv files and output plots")
 
 args <- parser$parse_args()
 
-print(args$allcsv)
-print(args$refMPKI)
+allipc_csv <- paste(args$dir, "/ipc.csv", sep="")
+refMPKI_csv <- paste(args$dir, "/MPKI.csv", sep="")
 print(args$ytitle)
 print(args$graphtitle)
 
-all_ipc <- read.csv(args$allcsv)
-ref_MPKI <- read.csv(args$refMPKI)
+all_ipc <- read.csv(allipc_csv)
+ref_MPKI <- read.csv(refMPKI_csv)
 ytitle <- args$ytitle
 graphtitle <- args$graphtitle
+output_prefix <- paste(args$dir, "/ipc", sep="")
 
 # Summarise the data with `ddply` from the **plyr** package, group by `supp` and `dose` and compute the mean of the corresponding values under the `len` column. This creates a new data frame whose columns are: `supp`, `dose` and `length`. 
 
 #library(plyr)
 library(dplyr)
-print(head(ref_MPKI))
 
 ref_MPKI <- filter(ref_MPKI, DRAM == "DDR3-2133L")
-print(head(ref_MPKI))
 
 # The next block of code renders the plot, the columns `dose` and `length` on the x, y axes and `supp` is used to group the data and [colour](https://www.getdatajoy.com/learn/Colour_Names:_Complete_List) each line.
 cbPalette <- c("#000000", "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#FF79A7")
@@ -63,6 +60,6 @@ widths = c(unit(0.6, "npc"), unit(0.4, "npc")), heights = c(unit(0.5, "npc"), un
 
  g <- arrangeGrob(p1,p2,ncol=2,
 widths = c(unit(0.6, "npc"), unit(0.4, "npc")), heights = c(unit(0.5, "npc"), unit(0.5, "npc"))) #generates g
- ggsave(file=paste(args$output,".png", sep=""), g) #saves g
- ggsave(file=paste(args$output,".pdf", sep=""), g) #saves g
+ ggsave(file=paste(output_prefix,".png", sep=""), g) #saves g
+ ggsave(file=paste(output_prefix,".pdf", sep=""), g) #saves g
 

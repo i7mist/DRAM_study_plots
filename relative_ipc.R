@@ -2,26 +2,30 @@
 library(argparse)
 
 parser <- ArgumentParser(description="Process some integers")
-parser$add_argument("--hpcsv", required=TRUE, help="input csv file that contains performance statistics for high performance DRAM")
-parser$add_argument("--lpcsv", required=TRUE, help="input csv file that contains performance statistics for low power DRAM")
-parser$add_argument("--refMPKI", required=TRUE, help="input csv file that contains MPKI statistics for this workload (use DDR3-2133L as a reference)")
 parser$add_argument("--ytitle", required=TRUE, help="input y axis title")
 parser$add_argument("--graphtitle", required=TRUE, help="input the title of the graph")
-parser$add_argument("--output", required=TRUE, help="plot output filename")
+parser$add_argument("--dir", required=TRUE, help="dir of input csv files and output plots")
 
 args <- parser$parse_args()
 
-print(args$hpcsv)
-print(args$lpcsv)
-print(args$refMPKI)
+hp_dir <- gsub("/all/", "/highperf_dram/", args$dir)
+lp_dir <- gsub("/all/", "/lp_dram/", args$dir)
+refMPKI_csv <- paste(args$dir, "/MPKI.csv", sep="")
+hpipc_csv <- paste(hp_dir, "/", args$ytitle, ".csv", sep="")
+lpipc_csv <- paste(lp_dir, "/", args$ytitle, ".csv", sep="")
+print(hpipc_csv)
+print(lpipc_csv)
+print(refMPKI_csv)
 print(args$ytitle)
 print(args$graphtitle)
 
-hp_normalized_ipc <- read.csv(args$hpcsv)
-lp_normalized_ipc <- read.csv(args$lpcsv)
-ref_MPKI <- read.csv(args$refMPKI)
+hp_normalized_ipc <- read.csv(hpipc_csv)
+lp_normalized_ipc <- read.csv(lpipc_csv)
+ref_MPKI <- read.csv(refMPKI_csv)
 ytitle <- args$ytitle
 graphtitle <- args$graphtitle
+output_prefix <- paste(args$dir, "/", args$ytitle, sep="")
+print(output_prefix)
 
 # Summarise the data with `ddply` from the **plyr** package, group by `supp` and `dose` and compute the mean of the corresponding values under the `len` column. This creates a new data frame whose columns are: `supp`, `dose` and `length`. 
 
@@ -77,6 +81,6 @@ widths = c(unit(0.6, "npc"), unit(0.4, "npc")))
 
  g <- arrangeGrob(p1,p2,p3,ncol=2, nrow=2,
 widths = c(unit(0.6, "npc"), unit(0.4, "npc"))) #generates g
- ggsave(file=paste(args$output,".png", sep=""), g) #saves g
- ggsave(file=paste(args$output,".pdf", sep=""), g) #saves g
+ ggsave(file=paste(output_prefix,".png", sep=""), g) #saves g
+ ggsave(file=paste(output_prefix,".pdf", sep=""), g) #saves g
 
